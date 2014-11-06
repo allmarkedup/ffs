@@ -1,0 +1,23 @@
+{
+    "name": "allmarkedup/ffs",
+    "description": "Filename-based metadata for your filesystem.",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mark Perkins",
+            "email": "mark@allmarkedup.com"
+        }
+    ],
+    "require": {
+        "symfony/finder": "~2.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.3",
+        "mockery/mockery": "~0.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Amu\\Ffs\\": "src/"
+        }
+    }
+}
