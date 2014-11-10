@@ -6,6 +6,13 @@ use Amu\Ffs\Iterator\RecursiveDirectoryIterator;
 
 class PhpAdapter extends SymPhpAdapter
 {
+    protected $recursiveDirectoryIteratorClass;
+
+    public function __construct($recursiveDirectoryIteratorClass = null)
+    {
+        $this->recursiveDirectoryIteratorClass = $recursiveDirectoryIteratorClass ?: 'Amu\Ffs\Iterator\RecursiveDirectoryIterator';
+    }
+    
     public function searchInDirectory($dir)
     {
         $flags = \RecursiveDirectoryIterator::SKIP_DOTS;
@@ -15,7 +22,7 @@ class PhpAdapter extends SymPhpAdapter
         }
 
         $iterator = new \RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator($dir, $flags, $this->ignoreUnreadableDirs),
+            new $this->recursiveDirectoryIteratorClass($dir, $flags, $this->ignoreUnreadableDirs),
             \RecursiveIteratorIterator::SELF_FIRST
         );
 

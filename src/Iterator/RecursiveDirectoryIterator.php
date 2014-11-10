@@ -5,8 +5,15 @@ use Symfony\Component\Finder\Iterator\RecursiveDirectoryIterator as SymRecursive
 
 class RecursiveDirectoryIterator extends SymRecursiveDirectoryIterator
 {
+    protected $splFileInfoClass = 'Amu\Ffs\SplFileInfo';
+
+    public function setFileInfoClass($splFileInfoClass)
+    {
+        $this->splFileInfoClass = $splFileInfoClass;
+    }
+
     public function current()
     {
-        return new SplFileInfo(parent::current()->getPathname(), $this->getSubPath(), $this->getSubPathname());
+        return new $this->splFileInfoClass(parent::current()->getPathname(), $this->getSubPath(), $this->getSubPathname());
     }
 }
