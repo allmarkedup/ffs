@@ -10,12 +10,14 @@ class Filesystem
 
     protected $iterator = null;
 
+    protected static $idDelimiters = array('[', ']');
+
     public function __construct($basePath, $iterator = null)
     {
         $this->basePath = $basePath;
         $this->setIterator($iterator);
     }
-
+    
     public function listAll($depth = '>= 0')
     {
         return $this->getFinder()->depth($depth);
@@ -23,12 +25,12 @@ class Filesystem
 
     public function listDirectories($depth = '>= 0')
     {
-        return $this->getFinder()->directories();
+        return $this->getFinder()->depth($depth)->directories();
     }
 
     public function listFiles($depth = '>= 0')
     {
-        return $this->getFinder()->files();
+        return $this->getFinder()->depth($depth)->files();
     }
 
     public function findById($id)
@@ -41,7 +43,7 @@ class Filesystem
         $this->iterator = $iterator;
     }
 
-    public function getFinder()
+    protected function getFinder()
     {
         $finder = new Finder($this->iterator);
         $finder->in($this->basePath)
