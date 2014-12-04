@@ -20,4 +20,34 @@ class Finder extends SymFinder
             ->addAdapter(new PhpAdapter($iteratorClass), -50)
             ->setAdapter('php');
     }
+
+    public function hasId($id)
+    {
+        return $this->filter(function($file) use ($id) {
+            if ( $file->getMetadataValue('id') === $id ) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public function isHidden()
+    {
+        return $this->filter(function($file) {
+            if ( $file->getMetadataValue('hidden') === true ) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public function isNotHidden()
+    {
+        return $this->filter(function($file) {
+            if ( $file->getMetadataValue('hidden') !== true ) {
+                return true;
+            }
+            return false;
+        });
+    }
 }

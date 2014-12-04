@@ -35,13 +35,7 @@ class Filesystem
 
     public function findById($id)
     {
-        // return $this->getFinder()->contains(SplFileInfo::getFrontMatterValueMatcher('id', $id)); 
-        return $this->getFinder()->filter(function($file) use ($id) {
-            if ( $file->getMetadataValue('id') === $id ) {
-                return true;
-            }
-            return false;
-        }); 
+        return $this->getFinder()->hasId($id); 
     }
 
     public function setIterator($iterator = null)

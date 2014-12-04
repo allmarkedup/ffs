@@ -37,7 +37,7 @@ class SplFileInfo extends \SplFileInfo
 
     public function isHidden()
     {
-        
+        return !! $this->getMetadataValue('hidden');
     }
 
     public function getBasenameWithoutExtension()
