@@ -8,6 +8,8 @@ use Amu\Ffs\Adapter\PhpAdapter;
 
 class Finder extends SymFinder
 {
+    protected $metadata = array();
+
     public function __construct($iteratorClass = null)
     {
         $this->ignore = static::IGNORE_VCS_FILES | static::IGNORE_DOT_FILES;
