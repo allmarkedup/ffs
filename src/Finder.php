@@ -8,9 +8,7 @@ use Amu\Ffs\Adapter\PhpAdapter;
 
 class Finder extends SymFinder
 {
-    protected $metadata = array();
-
-    public function __construct($iteratorClass = null)
+    public function __construct($basePath, $ignoreDotFiles = true, $iteratorClass = null)
     {
         $this->ignore = static::IGNORE_VCS_FILES | static::IGNORE_DOT_FILES;
         
@@ -19,35 +17,123 @@ class Finder extends SymFinder
             ->addAdapter(new BsdFindAdapter())
             ->addAdapter(new PhpAdapter($iteratorClass), -50)
             ->setAdapter('php');
+
+        $this->in($basePath)
+            ->ignoreUnreadableDirs()
+            ->ignoreDotFiles($ignoreDotFiles);
     }
 
-    public function hasId($id)
+    public function __call($name, $args)
     {
-        return $this->filter(function($file) use ($id) {
-            if ( $file->getMetadataValue('id') === $id ) {
-                return true;
+        $type = null;
+        foreach(['DoesNotContain', 'DoNotContain', 'Contains', 'Contain', 'DoesNotEqual', 'DoNotEqual', 'Equals', 'Equal'] as $matchType) {
+            if ( $this->endsWith($name, $matchType) ) {
+                $type = $matchType;
+                $key = str_replace($matchType, '', $name);
+                break;
             }
-            return false;
-        });
+        }
+        if (!$type) {
+            return;
+        }
+        $methodName = 'metadata' . $type;
+        $args = array_merge([$key], $args);
+        return call_user_func_array(array($this, $methodName), $args);
     }
 
-    public function isHidden()
+    public function hasMetadata()
     {
         return $this->filter(function($file) {
-            if ( $file->getMetadataValue('hidden') === true ) {
+            return $file->hasMetadata();
+        });
+    }
+
+    public function metadataExists($key)
+    {
+        return $this->filter(function($file) use ($key) {
+            return $file->metadataExists($key);
+        });
+    }
+
+    public function metadataEquals($key, $value)
+    {
+        return $this->filter(function($file) use ($key, $value) {
+            if ( $file->getMetadataValue($key) === $value ) {
                 return true;
             }
             return false;
         });
     }
 
-    public function isNotHidden()
+    // alias
+    public function metadataEqual($key, $value)
     {
-        return $this->filter(function($file) {
-            if ( $file->getMetadataValue('hidden') !== true ) {
+        return $this->metadataEquals($key, $value);
+    }
+
+    public function metadataDoesNotEqual($key, $value)
+    {
+        return $this->filter(function($file) use ($key, $value) {
+            if ( $file->getMetadataValue($key) !== $value ) {
                 return true;
             }
             return false;
         });
+    }
+
+    public function metadataDoNotEqual($key, $value)
+    {
+        return $this->metadataDoesNotEqual($key, $value);
+    }
+
+    public function metadataContains($key, $value)
+    {
+        return $this->filter(function($file) use ($key, $value) {
+            if ( Finder::isIn($file->getMetadataValue($key), $value) ) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public function metadataContain($key, $value)
+    {
+        return $this->metadataContains($key, $value);
+    }
+
+    public function metadataDoesNotContain($key, $value)
+    {
+        return $this->filter(function($file) use ($key, $value) {
+            if ( ! Finder::isIn($file->getMetadataValue($key), $value) ) {
+                return true;
+            }
+            return false;
+        });
+    }
+
+    public function metadataDoNotContain($key, $value)
+    {
+        return $this->metadataDoesNotContain($key, $value);
+    }
+
+    public static function isIn($compare, $value)
+    {
+        if (is_array($compare)) {
+            return in_array($value, $compare, is_object($value));
+        } elseif (is_string($compare)) {
+            if (!strlen($value)) {
+                return empty($compare);
+            }
+            return false !== strpos($compare, (string) $value);
+        } elseif ($compare instanceof Traversable) {
+            return in_array($value, iterator_to_array($compare, false), is_object($value));
+        }
+    }
+
+    protected function endsWith($string, $test) {
+        $strlen = strlen($string);
+        $testlen = strlen($test);
+        if ($testlen > $strlen) return false;
+        return substr_compare($string, $test, $strlen - $testlen, $testlen) === 0;
     }
 }

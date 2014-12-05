@@ -14,8 +14,6 @@ class SplFileInfo extends \SplFileInfo
 
     private $metadata = null;
 
-    // protected static $idDelimiters = array('[', ']');
-
     protected static $frontMatterDelimiter = '---';
 
     public function __construct($file, $relativePath, $relativePathname)
@@ -28,16 +26,6 @@ class SplFileInfo extends \SplFileInfo
     public function getDepth()
     {
         return count(explode('/', $this->getRelativePathname())) - 1;
-    }
-
-    public function getId()
-    {
-        return $this->getMetadataValue('id');
-    }
-
-    public function isHidden()
-    {
-        return !! $this->getMetadataValue('hidden');
     }
 
     public function getBasenameWithoutExtension()
@@ -55,14 +43,34 @@ class SplFileInfo extends \SplFileInfo
         return $this->relativePathname;
     }
 
+    public function hasMetadata()
+    {
+        return (! $this->isDir() && count($this->getMetadata()));
+    }
+
+    public function metadataExists($key)
+    {
+        if ( $this->isDir() ) {
+            return false;
+        }
+        $metadata = $this->getMetadata();
+        return isset($metadata[$key]);
+    }
+
     public function getMetadataValue($key)
     {
+        if ( $this->isDir() ) {
+            return null;
+        }
         $metadata = $this->getMetadata();
         return isset($metadata[$key]) ? $metadata[$key] : null;
     }
 
     public function getMetadata()
     {
+        if ( $this->isDir() ) {
+            return array();
+        }
         if ( is_null($this->metadata) ) {
             $this->parseRawContent();
         }
@@ -71,6 +79,9 @@ class SplFileInfo extends \SplFileInfo
 
     public function getBody()
     {
+        if ( $this->isDir() ) {
+            return null;
+        }
         if ( is_null($this->body) ) {
             $this->parseRawContent();
         }
@@ -79,6 +90,9 @@ class SplFileInfo extends \SplFileInfo
 
     public function getContents()
     {
+        if ( $this->isDir() ) {
+            return null;
+        }
         if ( is_null($this->rawContent) ) {
             $level = error_reporting(0);
             $content = file_get_contents($this->getPathname());
@@ -96,7 +110,7 @@ class SplFileInfo extends \SplFileInfo
     {
         $rawContent = $this->getContents();
         $lines = explode(PHP_EOL, $rawContent);
-        if (count($lines) <= 1 || rtrim($lines[0]) !== '---') {
+        if (count($lines) <= 1 || rtrim($lines[0]) !== static::$frontMatterDelimiter) {
             $this->metadata = [];
             $this->body = $rawContent;
             return;
@@ -108,7 +122,7 @@ class SplFileInfo extends \SplFileInfo
         $i = 1;
 
         foreach ($lines as $line) {
-            if ($line === '---') {
+            if ($line === static::$frontMatterDelimiter) {
                 break;
             }
             $yaml[] = $line;
@@ -117,18 +131,6 @@ class SplFileInfo extends \SplFileInfo
 
         $this->metadata = $parser->parse(implode(PHP_EOL, $yaml));
         $this->body = implode(PHP_EOL, array_slice($lines, $i));
-    }
-
-    // public static function getIdFormat($match = null)
-    // {
-    //     $match = $match ?: '([^\%1$s\%2$s]+)';
-    //     return sprintf('/.*?\%1$s' . $match . '\%2$s.*/', static::$idDelimiters[0], static::$idDelimiters[1]);
-    // }
-
-    public static function getFrontMatterValueMatcher($key, $value)
-    {
-        // return '/^' . $key . '\:\s+?' . $value . '\s+?' . static::$frontMatterDelimiter . '/m';
-        return '/.*+\-\-\-/m';
     }
 
 }
