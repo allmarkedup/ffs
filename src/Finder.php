@@ -132,7 +132,7 @@ class Finder extends SymFinder
 
     public function pathname($pathname)
     {
-        $info = pathinfo($pathname);
+        $info = pathinfo(ltrim($pathname, '/'));
         $this->path($info['dirname']);
         $this->name($info['basename']);
         return $this;
