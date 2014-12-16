@@ -130,6 +130,14 @@ class Finder extends SymFinder
         }
     }
 
+    public function pathname($pathname)
+    {
+        $info = pathinfo($pathname);
+        $this->path($info['dirname']);
+        $this->name($info['basename']);
+        return $this;
+    }
+
     protected function endsWith($string, $test) {
         $strlen = strlen($string);
         $testlen = strlen($test);
