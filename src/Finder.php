@@ -20,7 +20,7 @@ class Finder extends SymFinder
         $this
             ->addAdapter(new GnuFindAdapter())
             ->addAdapter(new BsdFindAdapter())
-            ->addAdapter(new PhpAdapter($iteratorClass), -50)
+            ->addAdapter(new PhpAdapter($this->iteratorClass), -50)
             ->setAdapter('php');
 
         $this->in($basePath)
