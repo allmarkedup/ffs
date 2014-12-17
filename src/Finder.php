@@ -8,9 +8,14 @@ use Amu\Ffs\Adapter\PhpAdapter;
 
 class Finder extends SymFinder
 {
+
+    protected $iteratorClass = null;
+
     public function __construct($basePath, $ignoreDotFiles = true, $iteratorClass = null)
     {
         $this->ignore = static::IGNORE_VCS_FILES | static::IGNORE_DOT_FILES;
+        
+        $this->iteratorClass = $iteratorClass ?: $this->iteratorClass;
         
         $this
             ->addAdapter(new GnuFindAdapter())
