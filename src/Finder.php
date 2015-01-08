@@ -138,7 +138,13 @@ class Finder extends SymFinder
     public function pathname($pathname)
     {
         $info = pathinfo(ltrim($pathname, '/'));
-        $this->path($info['dirname']);
+        if ($info['dirname'] == '.') {
+            $depth = 0;
+        } else {
+            $depth = count(explode('/',$info['dirname']));    
+            $this->path($info['dirname']);
+        }
+        $this->depth('== ' . $depth);
         $this->name($info['basename']);
         return $this;
     }
